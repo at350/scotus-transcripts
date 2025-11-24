@@ -4,6 +4,7 @@ import random
 import openai
 from tqdm import tqdm
 from dotenv import load_dotenv
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -11,6 +12,7 @@ load_dotenv()
 # Configuration
 INPUT_FILE = "scotus_corpus.jsonl"
 SAMPLE_SIZE = 8
+LOG_DIR = "verification_logs"
 API_KEY = os.getenv("OPENAI_API_KEY")
 
 if not API_KEY:
@@ -51,6 +53,13 @@ def get_llm_verification(case_name, year, speaker_name, text):
         return None
 
 def verify_data():
+    # Create log directory if it doesn't exist
+    os.makedirs(LOG_DIR, exist_ok=True)
+    
+    # Generate timestamped log filename
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file = os.path.join(LOG_DIR, f"verification_log_{timestamp}.json")
+    
     print("Loading corpus...")
     data = []
     with open(INPUT_FILE, 'r') as f:
@@ -72,6 +81,7 @@ def verify_data():
     
     correct_count = 0
     discrepancies = []
+    log_entries = []
     
     for record in tqdm(sample):
         llm_result = get_llm_verification(
@@ -86,8 +96,25 @@ def verify_data():
             
         is_sg_dataset = record['speaker_type'] == 'SG'
         is_sg_llm = llm_result['is_representing_us']
+        agreement = is_sg_dataset == is_sg_llm
         
-        if is_sg_dataset == is_sg_llm:
+        # Create log entry
+        log_entry = {
+            "case_name": record['case_name'],
+            "year": record['year'],
+            "docket_number": record['docket_number'],
+            "speaker_name": record['speaker_name'],
+            "speaker_affiliation": record['speaker_affiliation'],
+            "case_side": record['case_side'],
+            "utterance_excerpt": record['utterance_text'][:200],
+            "dataset_classification": record['speaker_type'],
+            "llm_says_representing_us": is_sg_llm,
+            "llm_reasoning": llm_result['reasoning'],
+            "agreement": agreement
+        }
+        log_entries.append(log_entry)
+        
+        if agreement:
             correct_count += 1
         else:
             discrepancies.append({
@@ -96,10 +123,22 @@ def verify_data():
                 "dataset_type": record['speaker_type'],
                 "llm_says_us": is_sg_llm
             })
-            
-    accuracy = (correct_count / len(sample)) * 100
+    
+    # Write log file
+    log_data = {
+        "timestamp": timestamp,
+        "sample_size": len(sample),
+        "correct_count": correct_count,
+        "accuracy": (correct_count / len(sample)) * 100 if sample else 0,
+        "entries": log_entries
+    }
+    
+    with open(log_file, 'w') as f:
+        json.dump(log_data, f, indent=2)
+    
     print(f"\nVerification Complete.")
-    print(f"Agreement Rate: {accuracy:.2f}%")
+    print(f"Agreement Rate: {log_data['accuracy']:.2f}%")
+    print(f"Log saved to: {log_file}")
     
     if discrepancies:
         print("\nDiscrepancies found:")
