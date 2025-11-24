@@ -19,99 +19,29 @@ OUTPUT_FILE = "scotus_corpus.jsonl"
 START_YEAR = 2000
 END_YEAR = 2024
 
-# Curated list of Solicitors General and Acting SGs (2000-2024)
-# Matches against full names in Oyez data
-SG_NAMES = {
-    "Seth P. Waxman", "Seth Waxman",
-    "Barbara D. Underwood", "Barbara Underwood",
-    "Theodore B. Olson", "Theodore Olson", "Ted Olson",
-    "Paul D. Clement", "Paul Clement",
-    "Gregory G. Garre", "Gregory Garre",
-    "Elena Kagan",
-    "Neal K. Katyal", "Neal Katyal",
-    "Donald B. Verrilli, Jr.", "Donald Verrilli", "Donald B. Verrilli",
-    "Ian H. Gershengorn", "Ian Gershengorn",
-    "Noel J. Francisco", "Noel Francisco",
-    "Jeffrey B. Wall", "Jeffrey Wall",
-    "Elizabeth B. Prelogar", "Elizabeth Prelogar",
-    "Scott G. Stewart", # Deputy SG often arguing? No, he was MS SG.
-    "Malcolm L. Stewart", # Deputy SG, very frequent.
-    "Edwin S. Kneedler", # Deputy SG, very frequent.
-    "Michael R. Dreeben", # Deputy SG, very frequent.
-    "Curtis E. Gannon", # Deputy SG
-    "Eric J. Feigin", # Deputy SG
-    "Sarah E. Harrington", # Deputy SG
-    "Brian H. Fletcher", # Deputy SG
-    "Masha G. Hansford", # Assistant to SG
-    "Frederick Liu", # Assistant to SG
-    "Vivek Suri", # Assistant to SG
-    "Jonathan C. Bond", # Assistant to SG
-    "Sopan Joshi", # Assistant to SG
-    "Austin L. Raynor", # Assistant to SG
-    "Mathew D. Kuhn", # Assistant to SG
-    "Benjamin W. Snyder", # Assistant to SG
-    "Yaira Dubin", # Assistant to SG
-    "Erica L. Ross", # Assistant to SG
-    "Colleen E. Roh Sinzdak", # Assistant to SG
-    "Reedy C. Swanson", # Assistant to SG
-    "Caroline A. Flynn", # Assistant to SG
-    "David M. Morrell", # Assistant to SG
-    "Morgan L. Ratner", # Assistant to SG
-    "Jonathan Y. Ellis", # Assistant to SG
-    "Rachel P. Kovner", # Assistant to SG
-    "Zachary D. Tripp", # Assistant to SG
-    "Hashim M. Mooppan", # Counselor to SG
-    "Christopher G. Michel", # Assistant to SG
-    "Robert A. Parker", # Assistant to SG
-    "Nicole A. Saharsky", # Assistant to SG
-    "Roman Martinez", # Assistant to SG
-    "Allon Kedem", # Assistant to SG
-    "Sarah E. Harrington", # Assistant to SG
-    "Ginger D. Anders", # Assistant to SG
-    "Rachel P. Kovner", # Assistant to SG
-    "John F. Bash", # Assistant to SG
-    "Ann O'Connell", # Assistant to SG
-    "Elaine J. Goldenberg", # Assistant to SG
-    "Sarah E. Harrington", # Assistant to SG
-    "Curtis E. Gannon", # Assistant to SG
-    "Eric J. Feigin", # Assistant to SG
-    "Anthony A. Yang", # Assistant to SG
-    "Melissa Arbus Sherry", # Assistant to SG
-    "Pratik A. Shah", # Assistant to SG
-    "Leondra R. Kruger", # Assistant to SG
-    "Joseph R. Palmore", # Assistant to SG
-    "William M. Jay", # Assistant to SG
-    "Benjamin J. Horwich", # Assistant to SG
-    "Sri Srinivasan", # Principal Deputy SG
-    "Deanne E. Maynard", # Assistant to SG
-    "Kannon K. Shanmugam", # Assistant to SG
-    "Daryl Joseffer", # Principal Deputy SG
-    "Lisa S. Blatt", # Assistant to SG
-    "Patricia A. Millett", # Assistant to SG
-    "James A. Feldman", # Assistant to SG
-    "Matthew D. Roberts", # Assistant to SG
-    "Jeffrey P. Minear", # Assistant to SG
-    "Austin C. Schlick", # Assistant to SG
-    "David B. Salmons", # Assistant to SG
-    "Douglas Hallward-Driemeier", # Assistant to SG
-    "Irving L. Gornstein", # Assistant to SG
-    "Jeffrey A. Lamken", # Assistant to SG
-    "Matthew D. Roberts", # Assistant to SG
-    "James A. Feldman", # Assistant to SG
-    "Malcolm L. Stewart", # Deputy SG
-    "Edwin S. Kneedler", # Deputy SG
-    "Michael R. Dreeben", # Deputy SG
-    "Lawrence G. Wallace", # Deputy SG
-    "Kent L. Jones", # Assistant to SG
-    "Edward C. DuMont", # Assistant to SG
-    "Beth S. Brinkmann", # Assistant to SG
-    "Lisa Schiavo Blatt", # Assistant to SG
-    "Jeffrey A. Lamken", # Assistant to SG
-    "Paul R.Q. Wolfson", # Assistant to SG
-    "David C. Frederick", # Assistant to SG
-    "Richard A. Seamon", # Assistant to SG
-    "Cornelia T.L. Pillard", # Assistant to SG
-}
+# Load SG Terms
+SG_TERMS_FILE = "sg_terms.json"
+SG_TERMS = {}
+if os.path.exists(SG_TERMS_FILE):
+    with open(SG_TERMS_FILE, 'r') as f:
+        SG_TERMS = json.load(f)
+else:
+    print(f"Warning: {SG_TERMS_FILE} not found. SG identification will be limited.")
+
+def normalize_name(name):
+    """
+    Normalizes a name by removing periods and middle initials if present.
+    Example: "Michael R. Dreeben" -> "Michael Dreeben"
+    """
+    if not name:
+        return ""
+    # Remove dots
+    name = name.replace(".", "")
+    parts = name.split()
+    if len(parts) > 2:
+        # Assume First Middle Last -> First Last
+        return f"{parts[0]} {parts[-1]}"
+    return name
 
 def is_justice(speaker):
     if not speaker:
@@ -123,12 +53,43 @@ def is_justice(speaker):
                 return True
     return False
 
-def is_sg(speaker_name):
-    if not speaker_name:
+def is_active_osg(speaker_name, year):
+    """
+    Checks if the speaker was active in the OSG during the given year.
+    Returns True if:
+    1. Name matches a known OSG attorney.
+    2. Year falls within one of their service terms.
+    """
+    if not speaker_name or not year:
         return False
-    # Check exact match or if name contains "General" (though Oyez name field usually doesn't have title)
-    # Oyez name: "Lori H. Windham"
-    return speaker_name in SG_NAMES
+    
+    # Try exact match
+    terms = SG_TERMS.get(speaker_name)
+    
+    # Try normalized match
+    if not terms:
+        norm_name = normalize_name(speaker_name)
+        # Search through keys
+        for key in SG_TERMS:
+            if normalize_name(key) == norm_name:
+                terms = SG_TERMS[key]
+                break
+    
+    if not terms:
+        return False
+        
+    # Check years
+    for term in terms:
+        start = term.get("start_year")
+        end = term.get("end_year")
+        if start and end:
+            if start <= year <= end:
+                return True
+        elif start: # Open ended or current
+             if start <= year:
+                 return True
+                 
+    return False
 
 def clean_text(text):
     # Remove [Laughter], [inaudible], (Applause)
@@ -139,17 +100,104 @@ def clean_text(text):
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
+def get_case_metadata(transcript_filename):
+    # Determine case summary filename
+    # Pattern: {year}.{docket}-t{xx}.json -> {year}.{docket}.json
+    # Or if no -t{xx}, assume it matches or check for base name
+    base_name = re.sub(r'-t\d+\.json$', '.json', transcript_filename)
+    case_filepath = os.path.join(INPUT_DIR, base_name)
+    
+    if not os.path.exists(case_filepath):
+        return {}
+
+    with open(case_filepath, 'r') as f:
+        try:
+            return json.load(f)
+        except json.JSONDecodeError:
+            return {}
+
+def parse_date(date_str):
+    # Example: "Oral Argument - November 04, 2020"
+    match = re.search(r'(\w+ \d{1,2}, \d{4})', date_str)
+    if match:
+        return match.group(1)
+    return None
+
+def get_speaker_metadata(speaker, advocates, case_summary, year):
+    speaker_name = speaker.get("name", "Unknown")
+    speaker_id = speaker.get("ID")
+
+    # Default Role/Side/Affiliation
+    role = "Private Counsel" # Default
+    side = "Unknown"
+    affiliation = "Unknown"
+    
+    # Find advocate in list
+    advocate_entry = None
+    if advocates:
+        for entry in advocates:
+            adv = entry.get("advocate")
+            if not adv:
+                continue
+            if str(adv.get("ID")) == str(speaker_id) or adv.get("name") == speaker_name:
+                advocate_entry = entry
+                break
+    
+    if advocate_entry:
+        desc = advocate_entry.get("advocate_description")
+        if desc:
+            desc = desc.lower()
+        else:
+            desc = ""
+        
+        # Determine Side
+        if "petitioner" in desc or "appellant" in desc:
+            side = "Petitioner"
+        elif "respondent" in desc or "appellee" in desc:
+            side = "Respondent"
+        elif "amicus" in desc:
+            side = "Amicus"
+        
+        # Determine Affiliation (simple extraction)
+        # "for the ..."
+        match = re.search(r'for (the )?(.+?)(,|$)', desc)
+        if match:
+            affiliation = match.group(2).strip()
+            # Clean up common prefixes/suffixes
+            affiliation = re.sub(r'^(united states|usa|u\.s\.)$', 'United States', affiliation, flags=re.IGNORECASE)
+        
+        # Determine Role
+        # Check if "United States" or "Solicitor General" is in the FULL description
+        is_us_affiliation = "united states" in desc.lower() or "solicitor general" in desc.lower()
+        
+        # Check if speaker is ACTIVE in OSG during this year
+        is_active = is_active_osg(speaker_name, year)
+        
+        if is_us_affiliation:
+             if is_active or "general" in speaker_name.lower():
+                 role = "Solicitor General" 
+             else:
+                 role = "Government Counsel"
+        elif "state of" in affiliation.lower():
+            role = "State Counsel"
+        
+        # Override for SGs/Deputies/Assistants who are ACTIVE
+        # This handles cases where metadata is poor (e.g. "for Respondent") but they are definitely OSG
+        if is_active:
+            role = "Solicitor General"
+            
+    return role, side, affiliation
+
 def process_files():
     with open(OUTPUT_FILE, 'w') as outfile:
         files = [f for f in os.listdir(INPUT_DIR) if f.endswith('.json')]
         
         for filename in tqdm(files, desc="Processing transcripts"):
             # Filter by year 2000-2024
-            # Filename format: {year}.{docket}.json or {year}.{docket}-t{xx}.json
             try:
                 year_str = filename.split('.')[0]
-                if '_' in year_str: # Handle 1900_1940 style if present, though usually just year
-                    continue # These are likely older
+                if '_' in year_str: 
+                    continue 
                 year = int(year_str)
             except ValueError:
                 continue
@@ -157,11 +205,6 @@ def process_files():
             if not (START_YEAR <= year <= END_YEAR):
                 continue
 
-            # Only process transcript files (usually have -tXX or just .json if it contains transcript?)
-            # README says: "Transcripts... appending t01...".
-            # But some files like `2020.19-123.json` (no t01) might be case summaries?
-            # Let's check if it has "transcript" field.
-            
             filepath = os.path.join(INPUT_DIR, filename)
             with open(filepath, 'r') as f:
                 try:
@@ -175,8 +218,19 @@ def process_files():
             transcript = data["transcript"]
             case_name = transcript.get("title", "Unknown")
             
+            # Metadata Extraction
+            case_metadata = get_case_metadata(filename)
+            docket_number = case_metadata.get("docket_number", "Unknown")
+            advocates_list = case_metadata.get("advocates", [])
+            
+            # Date extraction
+            transcript_title = data.get("title", "") # Top level title often has date
+            argument_date = parse_date(transcript_title)
+            
             # Iterate through sections and turns
             sections = transcript.get("sections", [])
+            speaking_turn_index = 0
+            
             for section in sections:
                 turns = section.get("turns", [])
                 for turn in turns:
@@ -185,11 +239,17 @@ def process_files():
                         continue
                     
                     speaker_name = speaker.get("name", "Unknown")
+                    speaker_id = speaker.get("ID")
                     
-                    # Determine Speaker Type
+                    # Determine Speaker Type (Basic)
                     if is_justice(speaker):
                         continue # Exclude Justices
-                    elif is_sg(speaker_name):
+                    
+                    # Enhanced Metadata
+                    role, side, affiliation = get_speaker_metadata(speaker, advocates_list, case_metadata, year)
+                    
+                    # Refine Speaker Type based on Role
+                    if role == "Solicitor General":
                         speaker_type = "SG"
                     else:
                         speaker_type = "Other"
@@ -209,13 +269,20 @@ def process_files():
                     record = {
                         "case_name": case_name,
                         "year": year,
+                        "docket_number": docket_number,
+                        "argument_date": argument_date,
                         "speaker_name": speaker_name,
                         "speaker_type": speaker_type,
-                        "utterance_text": cleaned_text.lower(), # Normalization: lowercase
+                        "role": role,
+                        "case_side": side,
+                        "speaker_affiliation": affiliation,
+                        "speaking_turn_index": speaking_turn_index,
+                        "utterance_text": cleaned_text.lower(),
                         "sentence_list": sentences
                     }
                     
                     outfile.write(json.dumps(record) + "\n")
+                    speaking_turn_index += 1
 
 if __name__ == "__main__":
     process_files()

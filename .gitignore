@@ -1,2 +1,7 @@
 .DS_Store
 .idea
+
+personalnotes.md
+.env
+*.jsonl
+__pycache__
