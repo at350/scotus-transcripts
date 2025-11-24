@@ -1,0 +1,112 @@
+{
+  "timestamp": "20251123_220811",
+  "sample_size": 8,
+  "correct_count": 8,
+  "accuracy": 100.0,
+  "entries": [
+    {
+      "case_name": "Verizon Communications, Inc. v. Law Offices of Curtis V. Trinco, LLP",
+      "year": 2003,
+      "docket_number": "02-682",
+      "speaker_name": "Richard G. Taranto",
+      "speaker_affiliation": "petitioner",
+      "case_side": "Petitioner",
+      "utterance_excerpt": "the merits question is a much more...",
+      "dataset_classification": "Other",
+      "llm_says_representing_us": false,
+      "llm_reasoning": "No. Richard G. Taranto appeared as private counsel for the respondent (Trinko), while the United States participated separately as amicus through the Solicitor General\u2019s office.",
+      "agreement": true
+    },
+    {
+      "case_name": "CONSUMER FINANCIAL PROTECTION BUREAU, ET AL., Petitioners, v. COMMUNITY FINANCIAL SERVICES ASSOCIATION OF AMERICA, LIMITED, ET AL., Respondents",
+      "year": 2023,
+      "docket_number": "22-448",
+      "speaker_name": "Elizabeth B. Prelogar",
+      "speaker_affiliation": "petitioners",
+      "case_side": "Petitioner",
+      "utterance_excerpt": "right.",
+      "dataset_classification": "SG",
+      "llm_says_representing_us": true,
+      "llm_reasoning": "Yes. Elizabeth B. Prelogar, as the U.S. Solicitor General, argued on behalf of the petitioners (the federal government/CFPB) in this case.",
+      "agreement": true
+    },
+    {
+      "case_name": "DENNIS OBDUSKEY, Petitioner, v. McCARTHY & HOLTHUS LLP, Respondent",
+      "year": 2018,
+      "docket_number": "17-1307",
+      "speaker_name": "Jonathan C. Bond",
+      "speaker_affiliation": "United States",
+      "case_side": "Respondent",
+      "utterance_excerpt": "mr. chief justice, and may it please the court: in the fdcpa, congress made a considered compromise judgment between security interest enforcers as debt collectors for a single subsection of the act, ",
+      "dataset_classification": "SG",
+      "llm_says_representing_us": true,
+      "llm_reasoning": "Yes. Jonathan C. Bond, an Assistant to the Solicitor General, presented argument as amicus curiae on behalf of the United States in Obduskey v. McCarthy & Holthus LLP.",
+      "agreement": true
+    },
+    {
+      "case_name": "Crawford v. Marion County Election Board",
+      "year": 2007,
+      "docket_number": "07-21",
+      "speaker_name": "Paul D. Clement",
+      "speaker_affiliation": "Unknown",
+      "case_side": "Respondent",
+      "utterance_excerpt": "--yes. i think, if you look where there have been these laws, there have been... the one observed phenomenon definitely is litigation. so i do think that these claims will be brought. i just really th",
+      "dataset_classification": "SG",
+      "llm_says_representing_us": true,
+      "llm_reasoning": "Yes. Paul D. Clement, then Solicitor General, argued as amicus curiae on behalf of the United States in support of the respondents.",
+      "agreement": true
+    },
+    {
+      "case_name": "National Labor Relations Board v. Kentucky River Community Care, Inc.",
+      "year": 2000,
+      "docket_number": "99-1815",
+      "speaker_name": "Michael W. Hawkins",
+      "speaker_affiliation": "respondents",
+      "case_side": "Respondent",
+      "utterance_excerpt": "--where's what in the joint appendix?",
+      "dataset_classification": "Other",
+      "llm_says_representing_us": false,
+      "llm_reasoning": "Michael W. Hawkins argued on behalf of Kentucky River Community Care, Inc., the respondent. The United States/NLRB was represented by the Solicitor General\u2019s office.",
+      "agreement": true
+    },
+    {
+      "case_name": "Halbert v. Michigan",
+      "year": 2004,
+      "docket_number": "03-10198",
+      "speaker_name": "David A. Moran",
+      "speaker_affiliation": "petitioner",
+      "case_side": "Petitioner",
+      "utterance_excerpt": "yes. well, not only that, if the state's waiver argument is correct, then presumably the state could extract a waiver saying you can't have free transcripts. you can't have the waiver of the filing fe",
+      "dataset_classification": "Other",
+      "llm_says_representing_us": false,
+      "llm_reasoning": "No. David A. Moran argued for the petitioner, Halbert, as counsel from the Michigan State Appellate Defender Office, not for the United States.",
+      "agreement": true
+    },
+    {
+      "case_name": "COINBASE, INC., Petitioner, v. ABRAHAM BIELSKI, Respondent",
+      "year": 2022,
+      "docket_number": "22-105",
+      "speaker_name": "Neal Kumar Katyal",
+      "speaker_affiliation": "petitioner",
+      "case_side": "Petitioner",
+      "utterance_excerpt": "so, first of all, obviously, this case we don't think is gamesmanship and the like and so on.",
+      "dataset_classification": "Other",
+      "llm_says_representing_us": false,
+      "llm_reasoning": "Neal Kumar Katyal appeared as counsel for Coinbase, Inc., the private petitioner, not on behalf of the United States or the Solicitor General\u2019s Office.",
+      "agreement": true
+    },
+    {
+      "case_name": "Hammon v. Indiana",
+      "year": 2005,
+      "docket_number": "05-5705",
+      "speaker_name": "Irving L. Gornstein",
+      "speaker_affiliation": "respondent",
+      "case_side": "Respondent",
+      "utterance_excerpt": "--he is the witness--",
+      "dataset_classification": "SG",
+      "llm_says_representing_us": true,
+      "llm_reasoning": "Yes. Irving L. Gornstein, an Assistant to the Solicitor General, argued as amicus curiae on behalf of the United States in the consolidated Davis v. Washington/Hammon v. Indiana oral argument.",
+      "agreement": true
+    }
+  ]
+}

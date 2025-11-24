@@ -5,3 +5,4 @@ personalnotes.md
 .env
 *.jsonl
 __pycache__
+reproduce_issue.py
