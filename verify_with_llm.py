@@ -10,7 +10,7 @@ load_dotenv()
 
 # Configuration
 INPUT_FILE = "scotus_corpus.jsonl"
-SAMPLE_SIZE = 10
+SAMPLE_SIZE = 8
 API_KEY = os.getenv("OPENAI_API_KEY")
 
 if not API_KEY:
@@ -38,7 +38,7 @@ def get_llm_verification(case_name, year, speaker_name, text):
     
     try:
         response = client.chat.completions.create(
-            model="gpt-5-mini",
+            model="gpt-5",
             messages=[
                 {"role": "system", "content": "You are a helpful legal assistant."},
                 {"role": "user", "content": prompt}
